@@ -14,6 +14,7 @@
       "QueueName": "QueueName", // имя очереди
       "UserName": "UserName", // имя пользователя
       "Password": "Password", // пароль
+      "Port": 5672, // порт
       "Timeout": 20 // таймаут для HTTP запросов
     }
   ]

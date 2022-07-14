@@ -3,12 +3,7 @@ using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using RabbitMQToHTTPLoadBalancingService.Configuration;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace RabbitMQToHTTPLoadBalancingService.RabbitMQ
 {
@@ -25,11 +20,12 @@ namespace RabbitMQToHTTPLoadBalancingService.RabbitMQ
         {
             this.config = config;
             this.logger = logger;
-            ConnectionFactory factory = new() 
-            { 
+            ConnectionFactory factory = new()
+            {
                 HostName = this.config.HostName,
                 UserName = this.config.UserName,
                 Password = this.config.Password,
+                Port = this.config.Port
             };
             connection = factory.CreateConnection();
             channel = connection.CreateModel();

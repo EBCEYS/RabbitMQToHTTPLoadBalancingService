@@ -1,19 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Worker">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <UserSecretsId>dotnet-RabbitMQToHTTPLoadBalancingService-14A41E1B-4483-4471-A45E-384EC7AA60FD</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <DockerfileContext>..\GitHub</DockerfileContext>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
-	<PackageReference Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="5.0.14" />
-	<PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="5.0.1" />
-	<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.15.1" />
-	<PackageReference Include="NLog" Version="4.7.13" />
-	<PackageReference Include="NLog.Extensions.Logging" Version="1.7.4" />
-	<PackageReference Include="NLog.Web.AspNetCore" Version="4.14.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
+	<PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="6.0.0" />
+	<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.16.1" />
+	<PackageReference Include="NLog" Version="5.0.1" />
+	<PackageReference Include="NLog.Extensions.Logging" Version="5.0.1" />
+	<PackageReference Include="NLog.Web.AspNetCore" Version="5.0.0" />
 	<PackageReference Include="RabbitMQ.Client" Version="6.4.0" />
-	<PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
   </ItemGroup>
 </Project>
