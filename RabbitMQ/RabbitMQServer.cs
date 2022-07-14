@@ -51,7 +51,7 @@ namespace RabbitMQToHTTPLoadBalancingService.RabbitMQ
                 {
                     string message = Encoding.UTF8.GetString(body);
                     this.logger.Info("Get message {message} from queue {queue}}", message, this.config.QueueName);
-                    response = IPStorage.RequestAndResponse(message, config.Timeout).Result;
+                    response = IPStorage.RequestAndResponse(message, config.Timeout);
                 }
                 catch (Exception ex)
                 {

@@ -32,51 +32,69 @@ namespace RabbitMQToHTTPLoadBalancingService
             IPStorage.logger.Info("Set ips: {@IpsDictionary}", IpsDictionary);
         }
 
-        public static async Task<string> RequestAndResponse(string message, int timeout)
+        public static string RequestAndResponse(string message, int timeout)
         {
+            List<string> listOfExcludedIps = new();
+            string responseString = null;
             HttpClientHandler handler = new();
             HttpClient httpClient = new(handler)
             {
                 Timeout = TimeSpan.FromSeconds(timeout)
             };
-
-            string ip = GetLeastBusyIp() ?? throw new Exception("Can not find any ips!");
-            IpsDictionary[ip]++;
-            UriBuilder uriBuilder = new(ip);
-            string id = Guid.NewGuid().ToString();
-            logger.Info("Try to post request {id} to {ip} with data {message}", id, uriBuilder.Uri.AbsoluteUri, message);
-            HttpRequestMessage request = new(HttpMethod.Post, uriBuilder.Uri)
+            for (int i = 0; i < IpsDictionary.Count; i++)
             {
-                Content = new StringContent(message, UTF8Encoding.UTF8)
-            };
-            string responseString = null;
+                string ip = GetLeastBusyIp() ?? throw new Exception("Can not find any ips!");
+                IpsDictionary[ip]++;
+                UriBuilder uriBuilder = new(ip);
+                string id = Guid.NewGuid().ToString();
+                logger.Info("Try to post request {id} to {ip} with data {message}", id, uriBuilder.Uri.AbsoluteUri, message);
+                HttpRequestMessage request = new(HttpMethod.Post, uriBuilder.Uri)
+                {
+                    Content = new StringContent(message, UTF8Encoding.UTF8)
+                };
+                bool result = SendRequest(httpClient, request, id, out responseString);
+                if (!result)
+                {
+                    IpsDictionary[ip]--;
+                    listOfExcludedIps.Add(ip);
+                }
+            }
+            
+            return responseString;
+        }
+
+        private static bool SendRequest(HttpClient client, HttpRequestMessage message, string id, out string responseString)
+        {
             try
             {
-                HttpResponseMessage response = await httpClient.SendAsync(request);
-                responseString = await response.Content.ReadAsStringAsync();
+                HttpResponseMessage response = client.SendAsync(message).Result;
+                responseString = response.Content.ReadAsStringAsync().Result;
                 logger.Info("Get response {id}, {response}", id, responseString);
+                return true;
             }
             catch (Exception ex)
             {
                 logger.Error(ex, "Error on sending http request! {ex}", ex.Message);
             }
-            IpsDictionary[ip]--;
-            return responseString;
+            responseString = null;
+            return false;
         }
 
-        private static string GetLeastBusyIp()
+        private static string GetLeastBusyIp(List<string> excludedIps = null)
         {
             if (IpsDictionary.Any())
             {
                 KeyValuePair<string, int> result = IpsDictionary.FirstOrDefault();
+                bool smthgChanged = false;
                 foreach (KeyValuePair<string, int> val in IpsDictionary.ToArray())
                 {
-                    if (val.Value <= result.Value)
+                    if (val.Value <= result.Value && !(excludedIps?.Exists(x => x == val.Key) ?? false))
                     {
                         result = val;
+                        smthgChanged = true;
                     }
                 }
-                return result.Key;
+                return smthgChanged ? result.Key : null;
             }
             return null;
         }
