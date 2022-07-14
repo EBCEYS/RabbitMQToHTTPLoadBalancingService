@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace RabbitMQToHTTPLoadBalancingService.RabbitMQ
+namespace RabbitMQToHTTPLoadBalancingService
 {
     /// <summary>
     /// Method response.
@@ -18,27 +18,12 @@ namespace RabbitMQToHTTPLoadBalancingService.RabbitMQ
         /// </value>
         public Result Answer { get; set; }
         /// <summary>
-        /// Gets or sets the request id.
-        /// </summary>
-        /// <value>
-        /// The request id.
-        /// </value>
-        public string RequestId { get; set; }
-        /// <summary>
         /// Gets or sets the value. If answer is not <c>OK</c>, value is <c>null</c>; otherwise <c>double</c>.
         /// </summary>
         /// <value>
         /// The value.
         /// </value>
         public double? Value { get; set; }
-        /// <summary>
-        /// Converts this to object.
-        /// </summary>
-        /// <returns>The object.</returns>
-        public object ToObject()
-        {
-            return new { Answer, RequestId, Value };
-        }
     }
 
     /// <summary>

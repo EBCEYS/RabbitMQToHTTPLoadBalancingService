@@ -23,6 +23,7 @@ namespace RabbitMQToHTTPLoadBalancingService
             List<string> ips = config.GetSection("AllowedIPs").Get<List<string>>();
             IPStorage.SetIps(ips, this.logger);
             rabbitMQConfigs = config.GetSection("RabbitMQConsumers").Get<List<RabbitMQConfig>>();
+            this.logger.Info("RabbitMQConsumers: {@rabbit}", rabbitMQConfigs);
         }
 
         private readonly List<RabbitMQConfig> rabbitMQConfigs = new();
@@ -36,16 +37,9 @@ namespace RabbitMQToHTTPLoadBalancingService
                 logger.Info("Start service at {date}", DateTime.UtcNow);
                 foreach(RabbitMQConfig configs in rabbitMQConfigs)
                 {
-                    //servers.Add(new(configs, logger));
+                    servers.Add(new(configs, logger));
                 }
-                //Возможно это не нужно. Стоит проверить.
-                while (CheckRabbitRecieversAreActive() && !stoppingToken.IsCancellationRequested) ;
             }, stoppingToken);
-        }
-
-        private bool CheckRabbitRecieversAreActive()
-        {
-            return servers.Any() && servers.Select(x => x.consumer.IsRunning).Where(x => x == true).Any();
         }
     }
 }

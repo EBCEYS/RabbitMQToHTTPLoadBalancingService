@@ -4,6 +4,8 @@ using RabbitMQ.Client.Events;
 using RabbitMQToHTTPLoadBalancingService.Configuration;
 using System;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace RabbitMQToHTTPLoadBalancingService.RabbitMQ
 {
@@ -42,21 +44,33 @@ namespace RabbitMQToHTTPLoadBalancingService.RabbitMQ
                 IBasicProperties props = ea.BasicProperties;
                 IBasicProperties replyProps = channel.CreateBasicProperties();
                 replyProps.CorrelationId = props.CorrelationId;
-
+                BaseResponse baseResponse = new();
+                BaseRequest baseRequest;
                 try
                 {
                     string message = Encoding.UTF8.GetString(body);
+                    baseRequest = IPStorage.ToObject<BaseRequest>(message);
+                    baseResponse.Id = baseRequest.Id;
+                    baseResponse.Result = new()
+                    {
+                        Answer = Result.ERROR
+                    };
                     this.logger.Info("Get message {message} from queue {queue}}", message, this.config.QueueName);
-                    response = IPStorage.RequestAndResponse(message, config.Timeout);
+                    response = IPStorage.RequestAndResponse(baseRequest, config.Timeout);
+                    if (!string.IsNullOrEmpty(response))
+                    {
+                        baseResponse = IPStorage.ToObject<BaseResponse>(response);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    logger.Error(ex, "Error on getting rabbit request! {exmessage}", ex.Message);
-                    response = "";
+                    logger.Error(ex, "Error on rabbit request! {exmessage}", ex.Message);
                 }
                 finally
                 {
-                    byte[] responseBytes = Encoding.UTF8.GetBytes(response);
+                    string resp = IPStorage.ToJson(baseResponse);
+                    this.logger.Info("On request {id} response is {resp}", baseResponse.Id, resp);
+                    byte[] responseBytes = Encoding.UTF8.GetBytes(resp);
                     channel.BasicPublish(exchange: "", routingKey: props.ReplyTo, basicProperties: replyProps, body: responseBytes);
                     channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
                 }
